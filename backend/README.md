@@ -1,5 +1,9 @@
 📘 LecturerMind Backend
+
+
 🎤 AI-Powered Lecture Transcription & Learning Assistant
+
+
 
 LecturerMind is a backend API built with FastAPI that converts lecture audio into text using OpenAI Whisper, forming the foundation for AI-powered learning tools like summaries, notes, and Q&A systems.
 
@@ -11,12 +15,19 @@ LecturerMind is a backend API built with FastAPI that converts lecture audio int
 📁 Temporary file handling for uploads
 🔐 Environment-based configuration
 🏗️ Tech Stack
+
+
+
 Python 3.10+
 FastAPI
 Uvicorn
 OpenAI API (Whisper)
 Python-dotenv
 python-multipart
+
+
+
+
 📂 Project Structure
 backend/
 │
@@ -33,6 +44,9 @@ backend/
 ├── uploads/
 ├── requirements.txt
 └── README.md
+
+
+
 ⚙️ Installation
 1. Clone repository
 git clone https://github.com/brianMugatsia/LecturerMind.git
@@ -47,12 +61,18 @@ pip install -r requirements.txt
 Create a .env file:
 
 OPENAI_API_KEY=your_openai_api_key_here
+
+
+
+
 ▶️ Running the server
 uvicorn app.main:app --reload
 
 or (safe option):
 
 python -m uvicorn app.main:app --reload
+
+
 📡 API Endpoints
 🔹 Home
 GET /
@@ -62,6 +82,8 @@ Response:
 {
   "message": "LecturerMind running 🚀"
 }
+
+
 🔹 Transcribe Audio
 POST /transcribe
 Form Data:
@@ -71,6 +93,9 @@ Response:
   "filename": "lecture.mp3",
   "transcript": "Today we are learning about..."
 }
+
+
+
 🧠 How it works
 Audio File
    ↓
@@ -81,13 +106,21 @@ Temporary File Storage
 OpenAI Whisper API
    ↓
 Text Transcript Returned
+
+
+
+
 🔐 Environment Variables
 Variable	Description
 OPENAI_API_KEY	Your OpenAI API key
+
+
 ⚠️ Notes
 Do NOT commit .env to GitHub
 Large audio files may take longer to process
 Requires internet connection for OpenAI API
+
+
 🚀 Future Improvements
 📄 AI lecture summarization (GPT-4o)
 📚 Auto-generated notes & flashcards
