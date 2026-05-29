@@ -1,0 +1,17 @@
+# virtual environment
+LMVenv/
+venv/
+
+# environment variables
+.env
+
+# python cache
+__pycache__/
+*.pyc
+
+# uploads (optional - recommended to ignore)
+uploads/
+
+# IDE files
+.vscode/
+.idea/
