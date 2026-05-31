@@ -1,17 +1,36 @@
-# virtual environment
+# Virtual environment
 LMVenv/
 venv/
 
-# environment variables
+# Environment variables
 .env
 
-# python cache
+# Python cache
 __pycache__/
 *.pyc
 
-# uploads (optional - recommended to ignore)
+# Uploads (optional - recommended to ignore)
 uploads/
 
 # IDE files
 .vscode/
 .idea/
+
+# Database files
+*.db
+*.sqlite3
+
+# Alembic cache
+alembic/versions/*.pyc
+
+# Logs
+*.log
+
+# OS/system files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
