@@ -1,138 +1,100 @@
-📘 LecturerMind Backend
+# LecturerMind Backend (FastAPI)
 
+Real-time lecture transcription, short-notes generation, and quiz generation API.
 
-🎤 AI-Powered Lecture Transcription & Learning Assistant
+## Stack
+- **FastAPI** — REST + WebSocket
+- **PostgreSQL** (+ pgvector) — persistence, future embedding-based RAG
+- **Redis + Celery** — background jobs (bulk quiz generation, audio upload)
+- **Deepgram** — real-time streaming speech-to-text
+- **Claude (Anthropic API)** — notes generation, quiz generation, chat Q&A
 
+## Local Setup
 
+### 1. Environment variables
+```bash
+cp .env.example .env
+# fill in DEEPGRAM_API_KEY and ANTHROPIC_API_KEY at minimum
+```
 
-LecturerMind is a backend API built with FastAPI that converts lecture audio into text using OpenAI Whisper, forming the foundation for AI-powered learning tools like summaries, notes, and Q&A systems.
+### 2. Run with Docker (recommended)
+```bash
+docker compose up --build
+```
+This starts Postgres (with pgvector), Redis, the API (port 8000), and a Celery worker.
 
-🚀 Features
-🎧 Upload audio files (MP3, WAV, etc.)
-🤖 Transcribe speech to text using OpenAI Whisper
-⚡ FastAPI REST API architecture
-🧠 Clean modular backend structure (routes, services, core)
-📁 Temporary file handling for uploads
-🔐 Environment-based configuration
-🏗️ Tech Stack
+Then run migrations inside the running api container:
+```bash
+docker compose exec api alembic upgrade head
+```
 
-
-
-Python 3.10+
-FastAPI
-Uvicorn
-OpenAI API (Whisper)
-Python-dotenv
-python-multipart
-
-
-
-
-📂 Project Structure
-backend/
-│
-├── app/
-│   ├── main.py
-│   ├── routes/
-│   │   └── transcription.py
-│   ├── services/
-│   │   └── whisper_service.py
-│   ├── core/
-│   │   └── config.py
-│   └── __init__.py
-│
-├── uploads/
-├── requirements.txt
-└── README.md
-
-
-
-⚙️ Installation
-1. Clone repository
-git clone https://github.com/brianMugatsia/LecturerMind.git
-cd LecturerMind/backend
-2. Create virtual environment
+### 3. Or run locally without Docker
+```bash
 python -m venv venv
-venv\Scripts\activate   # Windows
-3. Install dependencies
+source venv/bin/activate
 pip install -r requirements.txt
-4. Setup environment variables
 
-Create a .env file:
-
-OPENAI_API_KEY=your_openai_api_key_here
-
-
-
-
-▶️ Running the server
+# make sure Postgres + Redis are running locally and .env points to them
+alembic upgrade head
 uvicorn app.main:app --reload
+```
 
-or (safe option):
+In a second terminal, start the Celery worker:
+```bash
+celery -A app.workers.celery_app worker --loglevel=info
+```
 
-python -m uvicorn app.main:app --reload
+### 4. Generate your first migration
+Models already exist under `app/models/`. To create the initial migration:
+```bash
+alembic revision --autogenerate -m "initial tables"
+alembic upgrade head
+```
 
+## API Overview
 
-📡 API Endpoints
-🔹 Home
-GET /
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/v1/auth/register` | POST | Create account |
+| `/api/v1/auth/login` | POST | Get JWT access token (OAuth2 form) |
+| `/api/v1/lectures` | POST | Start a new lecture session |
+| `/api/v1/lectures` | GET | List your lectures |
+| `/api/v1/lectures/{id}` | GET | Lecture detail + transcript segments |
+| `/api/v1/lectures/{id}/end` | POST | Mark lecture as completed |
+| `/api/v1/lectures/{id}/notes` | GET | List generated short notes |
+| `/api/v1/lectures/{id}/quiz/generate` | POST | Generate 10-question quiz from full transcript |
+| `/api/v1/lectures/{id}/quiz` | GET | List quiz questions |
+| `/api/v1/lectures/{id}/chat` | POST | Ask a question (RAG over transcript) |
+| `/api/v1/lectures/{id}/chat` | GET | Chat thread history |
+| `/ws/lectures/{id}/stream?token=<jwt>` | WebSocket | Stream live audio, receive live transcript + notes |
 
-Response:
+## WebSocket Protocol
 
-{
-  "message": "LecturerMind running 🚀"
-}
+Connect to `/ws/lectures/{lecture_id}/stream?token=<jwt>` after creating a lecture via the REST endpoint.
 
+**Client sends:**
+- Binary frames: raw audio, 16kHz 16-bit PCM mono, ~250ms chunks
+- Text frame `"END"` when recording stops
 
-🔹 Transcribe Audio
-POST /transcribe
-Form Data:
-file: audio file (mp3, wav, etc.)
-Response:
-{
-  "filename": "lecture.mp3",
-  "transcript": "Today we are learning about..."
-}
+**Server sends (JSON):**
+```json
+{"type": "transcript", "text": "...", "is_final": true, "start_ms": 1200, "end_ms": 3400}
+{"type": "notes", "content": "- point one\n- point two", "created_at": "..."}
+{"type": "error", "detail": "..."}
+```
 
+The mobile app should render `type: transcript` events in the upper pane (append final
+segments, replace the trailing interim text as it updates) and `type: notes` events in
+the lower pane.
 
+## Notes on Production Readiness
 
-🧠 How it works
-Audio File
-   ↓
-FastAPI Upload Endpoint
-   ↓
-Temporary File Storage
-   ↓
-OpenAI Whisper API
-   ↓
-Text Transcript Returned
-
-
-
-
-🔐 Environment Variables
-Variable	Description
-OPENAI_API_KEY	Your OpenAI API key
-
-
-⚠️ Notes
-Do NOT commit .env to GitHub
-Large audio files may take longer to process
-Requires internet connection for OpenAI API
-
-
-🚀 Future Improvements
-📄 AI lecture summarization (GPT-4o)
-📚 Auto-generated notes & flashcards
-❓ Q&A chatbot from transcripts
-🌐 Frontend upload UI (React/Flutter)
-☁️ Cloud deployment (Render / Railway)
-👨‍💻 Author
-
-Brian Mugatsia
-Software Engineer | AI & Backend Developer
-🇰🇪 Kenya
-
-📜 License
-
-This project is licensed under the MIT License.
+- **RAG retrieval** (`app/services/rag_service.py`) currently uses simple keyword-overlap
+  retrieval so the chat feature works end-to-end without needing an embeddings provider
+  configured. Swap in real embeddings (OpenAI/Voyage/etc.) + pgvector similarity search
+  for better retrieval quality — the `TranscriptSegment.embedding` column is already
+  there, just needs to be populated on segment insert.
+- **CORS** is wide open (`allow_origins=["*"]`) for development — restrict this before
+  shipping.
+- **Notes debounce** interval is controlled by `NOTES_DEBOUNCE_SECONDS` in `.env`.
+- Tests live in `tests/`; run with `pytest`.
