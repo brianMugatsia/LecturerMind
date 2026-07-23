@@ -1,3 +1,7 @@
+
+# ======================
+# Frontend (React Native / Expo)
+# ======================
 node_modules/
 .expo/
 dist/
@@ -8,7 +12,42 @@ web-build/
 *.key
 *.mobileprovision
 *.orig.*
-.env
-.DS_Store
 android/
 ios/
+
+# ======================
+# Backend (FastAPI / Python)
+# ======================
+LMVenv/
+venv/
+backend/.venv/
+backend/.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Database files
+*.db
+*.sqlite3
+
+# Alembic cache
+alembic/versions/*.pyc
+
+# Uploads
+uploads/
+
+# Logs
+*.log
+
+# IDE/editor
+.vscode/
+.idea/
+
+# OS/system files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
