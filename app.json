@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "LecturerMind",
+    "slug": "lecturermind",
+    "scheme": "lecturermind",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f3460"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lecturermind.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "LecturerMind needs microphone access to record and transcribe lectures in real time."
+      }
+    },
+    "android": {
+      "package": "com.lecturermind.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0f3460"
+      },
+      "permissions": [
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "INTERNET"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-dev-client",
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow LecturerMind to access your microphone to record lectures."
+        }
+      ],
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://192.168.137.1:8000",
+      "wsUrl": "ws://192.168.137.1:8000"
+    }
+  }
+}
